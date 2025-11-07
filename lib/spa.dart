@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:klangvalley4locals/main.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'generated/l10n.dart';
 
@@ -13,131 +14,656 @@ class Spa extends StatefulWidget {
 }
 
 class _SpaState extends State<Spa> {
+  List<String> favoriteSpa = [];
+  bool showFavoritesOnly = false;
+  String selectedFilter = 'All';
+
+  final List<ItemData> spaItems = [
+    ItemData(
+      title: 'Khareyana Spa',
+      imageUrl:
+          'https://www.klangvalley4locals.com.my/assets/img/spakv/khareyana.jpg',
+      location: '36, Jalan Selangor, Pjs 7, 40650 Petaling Jaya, Selangor',
+      hours: '10.00 am - 8.00 pm (Monday - Sunday)',
+      phone: '03-7958 6219',
+      rating: 4.5,
+      priceRange: '\$\$',
+      amenities: ['Massage', 'Facial', 'Body Scrub'],
+      isOpen24Hours: false,
+    ),
+    ItemData(
+      title: 'Lavish Spa',
+      imageUrl: 'https://www.klangvalley4locals.com.my/assets/img/spakv/2.jpg',
+      location:
+          'Lot 5-02-06, 179, Jalan Gading, Bukit Bintang, 55100 Kuala Lumpur',
+      hours: 'Open for 24 hours',
+      phone: '+603-2148 5888',
+      rating: 4.8,
+      priceRange: '\$\$\$',
+      amenities: ['24/7 Service', 'Couple Spa', 'Hot Stone'],
+      isOpen24Hours: true,
+    ),
+    ItemData(
+      title: 'Swasana Spa',
+      imageUrl: 'https://www.klangvalley4locals.com.my/assets/img/spakv/4.jpg',
+      location:
+          'Impiana @ Klcc Hotel, No. 13, Jalan Pinang, Kuala Lumpur, 50450 Kuala Lumpur, Wilayah Persekutuan',
+      hours: '10.00 am - 10.00 pm (Monday - Sunday)',
+      phone: '+603-2147 1111',
+      rating: 4.7,
+      priceRange: '\$\$\$',
+      amenities: ['Luxury Suite', 'Aromatherapy', 'Sauna'],
+      isOpen24Hours: false,
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? saved = prefs.getStringList('favorite_spa');
+    if (saved != null) {
+      setState(() {
+        favoriteSpa = saved;
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite(String title) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (favoriteSpa.contains(title)) {
+        favoriteSpa.remove(title);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Removed from favorites'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      } else {
+        favoriteSpa.add(title);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Added to favorites! 💆‍♀️'),
+            backgroundColor: const Color(0xFF25D366),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    });
+    await prefs.setStringList('favorite_spa', favoriteSpa);
+  }
+
+  List<ItemData> get filteredItems {
+    var items = spaItems;
+
+    // Apply favorites filter
+    if (showFavoritesOnly) {
+      items = items.where((item) => favoriteSpa.contains(item.title)).toList();
+    }
+
+    // Apply 24/7 filter
+    if (selectedFilter == '24/7') {
+      items = items.where((item) => item.isOpen24Hours).toList();
+    }
+
+    return items;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        iconTheme: const IconThemeData(
-          color: Colors.white, // Change your color here
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: Text(
+          S.of(context).spaTime,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        title: Text(S.of(context).spaTime,
-            style: const TextStyle(color: Colors.white)),
         backgroundColor: const Color.fromARGB(255, 0, 71, 133),
-        actions: const <Widget>[
-          AppBarMore(),
+        actions: [
+          IconButton(
+            icon: Icon(
+              showFavoritesOnly ? Icons.favorite : Icons.favorite_border,
+              color: showFavoritesOnly ? Colors.red : Colors.white,
+            ),
+            onPressed: () {
+              setState(() {
+                showFavoritesOnly = !showFavoritesOnly;
+              });
+            },
+            tooltip: 'Show Favorites Only',
+          ),
+          const AppBarMore(),
         ],
       ),
-      body: MyList2(
-        items: [
-          ItemData(
-            title: 'Khareyana Spa',
-            imageUrl:
-                'https://www.klangvalley4locals.com.my/assets/img/spakv/khareyana.jpg',
-            location:
-                '36, Jalan Selangor, Pjs 7, 40650 Petaling Jaya, Selangor',
-            hours: '10.00 am - 8.00 pm (Monday - Sunday)',
-            phone: '03-7958 6219',
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black,
+              const Color(0xFF0A1128),
+              Colors.black,
+            ],
           ),
-          ItemData(
-            title: 'Lavish Spa',
-            imageUrl:
-                'https://www.klangvalley4locals.com.my/assets/img/spakv/2.jpg',
-            location:
-                'Lot 5-02-06, 179, Jalan Gading, Bukit Bintang, 55100 Kuala Lumpur',
-            hours: 'Open for 24 hours',
-            phone: '+603-2148 5888',
+        ),
+        child: Column(
+          children: [
+            // Header Section
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Relax & Rejuvenate',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Discover premium spa experiences in Klang Valley',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Filter Chips
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildFilterChip('All', Icons.spa),
+                        const SizedBox(width: 8),
+                        _buildFilterChip('24/7', Icons.access_time),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Spa List
+            Expanded(
+              child: filteredItems.isEmpty
+                  ? _buildEmptyState()
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: filteredItems.length,
+                      itemBuilder: (context, index) {
+                        return _buildSpaCard(filteredItems[index]);
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, IconData icon) {
+    final isSelected = selectedFilter == label;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = label;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFFFF8C42), Color(0xFFFF6B9D)],
+                )
+              : null,
+          color: isSelected ? null : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color:
+                isSelected ? Colors.transparent : Colors.white.withOpacity(0.3),
+            width: 1,
           ),
-          ItemData(
-            title: 'Swasana Spa',
-            imageUrl:
-                'https://www.klangvalley4locals.com.my/assets/img/spakv/4.jpg',
-            location:
-                'Impiana @ Klcc Hotel, No. 13, Jalan Pinang, Kuala Lumpur, 50450 Kuala Lumpur, Wilayah Persekutuan',
-            hours: '10.00 am - 10.00 pm (Monday - Sunday)',
-            phone: '+603-2147 1111',
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: Colors.white,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.spa_outlined,
+            size: 80,
+            color: Colors.white.withOpacity(0.3),
           ),
-          // Add more spa locations here
+          const SizedBox(height: 16),
+          Text(
+            showFavoritesOnly
+                ? 'No favorite spas yet'
+                : 'No spas match your filters',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.white.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            showFavoritesOnly
+                ? 'Start adding your favorite spas!'
+                : 'Try adjusting your filters',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.5),
+            ),
+          ),
         ],
       ),
     );
   }
-}
 
-class MyList2 extends StatelessWidget {
-  final List<ItemData> items;
+  Widget _buildSpaCard(ItemData item) {
+    final isFavorite = favoriteSpa.contains(item.title);
 
-  MyList2({required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return Card(
-          elevation: 3.0,
-          margin: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF1A2947),
+            const Color(0xFF0D1B2A),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFFF6B9D).withOpacity(0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF6B9D).withOpacity(0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Image with badges
+          Stack(
             children: [
-              Center(
+              ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
                 child: CachedNetworkImage(
-                  imageUrl: items[index].imageUrl,
+                  imageUrl: item.imageUrl,
                   fit: BoxFit.cover,
                   height: 200,
                   width: double.infinity,
+                  placeholder: (context, url) => Container(
+                    height: 200,
+                    color: Colors.grey[900],
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Color(0xFFFF6B9D)),
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    height: 200,
+                    color: Colors.grey[900],
+                    child: const Icon(Icons.error, color: Colors.red),
+                  ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      items[index].title,
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                      ),
+              // Gradient overlay
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(24),
+                    topRight: Radius.circular(24),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+              ),
+              // 24/7 Badge
+              if (item.isOpen24Hours)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
                     ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      'Location: ${items[index].location}',
-                      style: const TextStyle(
-                        fontSize: 16.0,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF00E676), Color(0xFF00D4FF)],
                       ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E676).withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      'Operating Hours: ${items[index].hours}',
-                      style: const TextStyle(
-                        fontSize: 16.0,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.access_time, size: 14, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          '24/7',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              // Favorite Button
+              Positioned(
+                top: 16,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () => _toggleFavorite(item.title),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavorite ? Colors.red : Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+              // Rating Badge
+              Positioned(
+                bottom: 12,
+                left: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.star,
+                        color: Color(0xFFFFB800),
+                        size: 16,
                       ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Text(
-                      'Phone: ${items[index].phone}',
-                      style: const TextStyle(
-                        fontSize: 16.0,
-                        color: Colors.black,
-                        decoration: TextDecoration.underline,
+                      const SizedBox(width: 4),
+                      Text(
+                        item.rating.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+              // Price Badge
+              Positioned(
+                bottom: 12,
+                right: 16,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF6B9D).withOpacity(0.9),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    item.priceRange,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
                     ),
-                  ],
+                  ),
                 ),
               ),
             ],
           ),
-        );
-      },
+          // Details Section
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.title,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // Amenities Tags
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: item.amenities.map((amenity) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF9C27B0).withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF9C27B0).withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        amenity,
+                        style: const TextStyle(
+                          color: Color(0xFFCE93D8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                _buildInfoRow(
+                  Icons.location_on_rounded,
+                  item.location,
+                  const Color(0xFFFF6B9D),
+                ),
+                const SizedBox(height: 10),
+                _buildInfoRow(
+                  Icons.access_time_rounded,
+                  item.hours,
+                  const Color(0xFF00D4FF),
+                ),
+                const SizedBox(height: 10),
+                _buildInfoRow(
+                  Icons.phone_rounded,
+                  item.phone,
+                  const Color(0xFF00E676),
+                ),
+                const SizedBox(height: 20),
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _makePhoneCall(item.phone),
+                        icon: const Icon(Icons.phone, size: 18),
+                        label: const Text('Call Now'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF8C42),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _openMaps(item.location),
+                        icon: const Icon(Icons.directions, size: 18),
+                        label: const Text('Directions'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFFF6B9D),
+                          side: const BorderSide(
+                            color: Color(0xFFFF6B9D),
+                            width: 2,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  void _launchURL(String url) async {
-    var uri = Uri.parse(url);
+  Widget _buildInfoRow(IconData icon, String text, Color color) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(
+            icon,
+            size: 16,
+            color: color,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.white.withOpacity(0.8),
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^0-9+]'), '');
+    final uri = Uri.parse('tel:$cleanNumber');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not make phone call')),
+      );
+    }
+  }
+
+  void _openMaps(String location) async {
+    final query = Uri.encodeComponent(location);
+    final uri =
+        Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch $url';
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open maps')),
+      );
     }
   }
 }
@@ -148,6 +674,10 @@ class ItemData {
   final String location;
   final String hours;
   final String phone;
+  final double rating;
+  final String priceRange;
+  final List<String> amenities;
+  final bool isOpen24Hours;
 
   ItemData({
     required this.title,
@@ -155,426 +685,9 @@ class ItemData {
     required this.location,
     required this.hours,
     required this.phone,
+    required this.rating,
+    required this.priceRange,
+    required this.amenities,
+    required this.isOpen24Hours,
   });
 }
-
-void _launchURL(String url) async {
-  var uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  } else {
-    throw 'Could not launch $url';
-  }
-}
-
-
-
-
-// // ignore_for_file: camel_case_types
-
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:cached_network_image/cached_network_image.dart';
-// import 'package:kltheguide/main.dart';
-// import 'package:url_launcher/url_launcher.dart';
-
-// Future<List<ApiData>> fetchData(bodyparse) async {
-//   final response = await http.post(
-//     Uri.parse('https://www.kltheguide.com.my/admin/functions.php'),
-//     body: {bodyparse: bodyparse},
-//   );
-
-//   if (response.statusCode == 200) {
-//     final List<dynamic> jsonData = jsonDecode(response.body);
-//     return jsonData.map((json) => ApiData.fromJson(json)).toList();
-//   } else {
-//     throw Exception('Failed to load data');
-//   }
-// }
-
-// Future<List<ApiData>> fetchData2(bodyparse, category) async {
-//   final response = await http.post(
-//     Uri.parse('https://www.kltheguide.com.my/admin/functions.php'),
-//     body: {bodyparse: bodyparse, 'category': category},
-//   );
-
-//   if (response.statusCode == 200) {
-//     final List<dynamic> jsonData = jsonDecode(response.body);
-//     return jsonData.map((json) => ApiData.fromJson(json)).toList();
-//   } else {
-//     throw Exception('Failed to load data');
-//   }
-// }
-
-// class Spa extends StatefulWidget {
-//   const Spa({super.key});
-
-//   @override
-//   _SpaState createState() => _SpaState();
-// }
-
-// class _SpaState extends State<Spa> {
-//   late Future<List<ApiData>> _data;
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _data = fetchData('appSpa');
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         iconTheme: const IconThemeData(
-//           color: Colors.white, //change your color here
-//         ),
-//         title: const Text("Spa Time", style: TextStyle(color: Colors.white)),
-//         // foregroundColor: const Color.fromARGB(255, 0, 71, 133),
-//         backgroundColor: const Color.fromARGB(255, 0, 71, 133),
-//         actions: const <Widget>[
-//           AppBarMore(),
-//         ],
-//       ),
-//       body: FutureBuilder<List<ApiData>>(
-//         future: _data,
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return const Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             return Center(child: Text('Error: ${snapshot.error}'));
-//           } else {
-//             return CardListWidget(data: snapshot.data ?? []);
-//           }
-//         },
-//       ),
-//     );
-//   }
-// }
-
-
-
-// class ApiData {
-//   final String title;
-//   final String content;
-//   final String content2;
-//   final String image;
-//   final String location;
-//   final String locationurl;
-//   final String hours;
-//   final String phone;
-//   final String website;
-
-//   ApiData({
-//     required this.location,
-//     required this.locationurl,
-//     required this.hours,
-//     required this.phone,
-//     required this.title,
-//     required this.content,
-//     required this.content2,
-//     required this.image,
-//     required this.website,
-//   });
-
-//   factory ApiData.fromJson(Map<String, dynamic> json) {
-//     return ApiData(
-//       title: json['title'] ?? '',
-//       content: json['content'] ?? '',
-//       content2: json['content2'] ?? '',
-//       image: json['image'] ?? '',
-//       location: json['location'] ?? '',
-//       locationurl: json['locationurl'] ?? '',
-//       hours: json['hours'] ?? '',
-//       phone: json['phone'] ?? '',
-//       website: json['website'] ?? '',
-//     );
-//   }
-// }
-
-// class CardListWidget extends StatelessWidget {
-//   final List<ApiData> data;
-
-//   const CardListWidget({super.key, required this.data});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return ListView.builder(
-//       itemCount: data.length,
-//       itemBuilder: (context, index) {
-//         final item = data[index];
-//         if (item.location != '') {
-//           return GestureDetector(
-//             onTap: () {
-//               Navigator.push(
-//                   context,
-//                   MaterialPageRoute(
-//                       builder: (context) => DetailPage(
-//                             title: item.title,
-//                             image: item.image,
-//                             content: item.content,
-//                             content2: item.content2,
-//                             location: item.location,
-//                             locationurl: item.locationurl,
-//                             hours: item.hours.replaceAll('/', '\n'),
-//                             phone: item.phone.replaceAll('/', '\n'),
-//                             website: item.website,
-//                           )));
-//             },
-//             child: Card(
-//               elevation: 4.0,
-//               margin: const EdgeInsets.all(16.0),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   CachedNetworkImage(
-//                     imageUrl: item.image,
-//                     fit: BoxFit.cover,
-//                     height: 200,
-//                     width: double.infinity,
-//                   ),
-//                   Padding(
-//                     padding: const EdgeInsets.all(16.0),
-//                     child: Column(
-//                       crossAxisAlignment: CrossAxisAlignment.start,
-//                       children: [
-//                         Text(
-//                           (item.title),
-//                           style: const TextStyle(
-//                             fontSize: 20,
-//                             fontWeight: FontWeight.bold,
-//                           ),
-//                         ),
-//                         if (item.content != '') const SizedBox(height: 8.0),
-//                         if (item.content != '')
-//                           Text(item.content.replaceAll('\\n', '\n')),
-//                       ],
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           );
-//         } else {
-//           return Card(
-//             elevation: 4.0,
-//             margin: const EdgeInsets.all(16.0),
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 CachedNetworkImage(
-//                   imageUrl: item.image,
-//                   fit: BoxFit.cover,
-//                   height: 200,
-//                   width: double.infinity,
-//                 ),
-//                 Padding(
-//                   padding: const EdgeInsets.all(16.0),
-//                   child: Column(
-//                     crossAxisAlignment: CrossAxisAlignment.start,
-//                     children: [
-//                       Text(
-//                         (item.title),
-//                         style: const TextStyle(
-//                           fontSize: 20,
-//                           fontWeight: FontWeight.bold,
-//                         ),
-//                       ),
-//                       const SizedBox(height: 8.0),
-//                       Text(item.content.replaceAll('\\n', '\n')),
-//                     ],
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           );
-//         }
-//       },
-//     );
-//   }
-// }
-
-// class CardItem extends StatelessWidget {
-//   final String name;
-//   final String image;
-//   final int index;
-
-//   const CardItem(
-//       {super.key,
-//       required this.name,
-//       required this.image,
-//       required this.index});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return GestureDetector(
-//       onTap: () {
-//         // Navigate to a detail page or perform an action when the card is tapped
-//         // You can use Navigator to navigate to a detail page with specific data
-//         // For example: Navigator.push(context, MaterialPageRoute(builder: (context) => DetailPage(name: name, image: image)));
-
-//         Navigator.pushNamed(context, '/explorekl-$index',
-//             arguments: {'index': index});
-//       },
-//       child: Card(
-//         elevation: 3,
-//         margin: const EdgeInsets.all(10),
-//         child: AspectRatio(
-//           aspectRatio: 16 / 9,
-//           child: Container(
-//             decoration: BoxDecoration(
-//               image: DecorationImage(
-//                 image: NetworkImage(image),
-//                 fit: BoxFit.cover, // Make the image cover the entire card
-//               ),
-//             ),
-//             child: Center(
-//               child: Container(
-//                 padding: const EdgeInsets.all(8),
-//                 color: Colors.black
-//                     .withOpacity(0.5), // Adjust the opacity as needed
-//                 child: Text(
-//                   name,
-//                   style: const TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 20,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// class DetailPage extends StatelessWidget {
-//   final String title;
-//   final String content;
-//   final String content2;
-//   final String image;
-//   final String location;
-//   final String locationurl;
-//   final String hours;
-//   final String phone;
-//   final String website;
-
-//   const DetailPage({
-//     super.key,
-//     required this.location,
-//     required this.locationurl,
-//     required this.hours,
-//     required this.phone,
-//     required this.title,
-//     required this.content,
-//     required this.content2,
-//     required this.image,
-//     required this.website,
-//   });
-
-//   @override
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         iconTheme: const IconThemeData(
-//           color: Colors.white, //change your color here
-//         ),
-//         title: const Text("Details", style: TextStyle(color: Colors.white)),
-//         // foregroundColor: const Color.fromARGB(255, 0, 71, 133),
-//         backgroundColor: const Color.fromARGB(255, 0, 71, 133),
-//         actions: const <Widget>[
-//           AppBarMore(),
-//         ],
-//       ),
-//       body: SingleChildScrollView(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             // Display article title
-//             CachedNetworkImage(
-//               imageUrl: image,
-//               fit: BoxFit.cover,
-//               width: double.infinity,
-//             ),
-//             const SizedBox(height: 16),
-
-//             Text(
-//               title, // Replace with the actual title key
-//               style: const TextStyle(
-//                 fontSize: 24.0,
-//                 fontWeight: FontWeight.bold,
-//               ),
-//             ),
-//             if (content != '') const SizedBox(height: 16.0),
-
-//             // Display article content
-//             if (content != '')
-//               Text(
-//                 content != ''
-//                     ? content
-//                     : '', // Replace with the actual content key
-//                 style: const TextStyle(
-//                   fontSize: 16.0,
-//                 ),
-//               ),
-
-//             if (content2 != '')
-//               Text(
-//                 content2, // Replace with the actual content key
-//                 style: const TextStyle(
-//                   fontSize: 16.0,
-//                 ),
-//               ),
-//             if (location != '')
-//               ListTile(
-//                 leading: const Icon(Icons.location_pin),
-//                 title: Text('Location: $location'),
-//                 onTap: () {
-//                   // Add functionality to open the email app with the recipient's email address pre-filled
-//                   _launchURL(locationurl);
-//                 },
-//               ),
-//             if (phone != '')
-//               ListTile(
-//                 leading: const Icon(Icons.phone),
-//                 title: Text('Phone: $phone'),
-//                 onTap: () {
-//                   // Add functionality to open the email app with the recipient's email address pre-filled
-//                   _launchURL('tel:$phone');
-//                 },
-//               ),
-//             if (hours != '')
-//               ListTile(
-//                 leading: const Icon(Icons.watch_later),
-//                 title: Text('Hours:\n $hours'),
-//               ),
-//             if (website != '')
-//               ListTile(
-//                 leading: const Icon(Icons.public),
-//                 title: Text('Website: $website'),
-//                 onTap: () {
-//                   // Add functionality to open the email app with the recipient's email address pre-filled
-//                   _launchURL(website);
-//                 },
-//               ),
-//             // Add other widgets to display additional details as needed
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
-
-// void _launchURL(url) async {
-//   var url2 = Uri.parse(url);
-//   if (await canLaunchUrl(url2)) {
-//     await launchUrl(url2,mode: LaunchMode.externalApplication);
-//   } else {
-//     throw 'Could not launch $url';
-//   }
-// }

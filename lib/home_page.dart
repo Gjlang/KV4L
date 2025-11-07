@@ -23,14 +23,12 @@ class _HomeScreenState extends State<HomeScreen> {
     'https://www.klangvalley4locals.com.my/assets/img/highlights/about_kv2.jpg',
     'https://www.klangvalley4locals.com.my/assets/img/highlights/getting_around.jpg',
     'https://www.klangvalley4locals.com.my/assets/img/highlights/bukitbintang.jpg',
-    // Add more image URLs as needed
   ];
 
   final List<String> titlesHighlights = [
     'About Klang Valley',
     'Getting Around KV',
     'Travel Tips',
-    // Add more titles corresponding to image URLs
   ];
 
   final List<String> imagesRmd = [
@@ -39,8 +37,6 @@ class _HomeScreenState extends State<HomeScreen> {
     'https://www.kltheguide.com.my/assets/img/recommendation/places-to-stay-in-kl.jpg',
     'https://www.kltheguide.com.my/assets/img/recommendation/Spa.jpg',
     'https://www.kltheguide.com.my/assets/img/recommendation/11.medical-tourism.png',
-
-    // Add more image URLs as needed
   ];
 
   @override
@@ -61,89 +57,191 @@ class _HomeScreenState extends State<HomeScreen> {
     ];
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly, // Ensures even spacing
-                children: [
-                  GestureDetector(
-                    child: const Icon(
-                      Icons.facebook_sharp,
-                      color: Colors.blue,
-                      size: 48,
-                    ),
-                    onTap: () => _launchURL(
-                        'https://www.facebook.com/klangvalley4locals/'),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1a237e),
+              Color(0xFF0d47a1),
+              Color(0xFF01579b),
+            ],
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              // Hero Section with Gradient Overlay
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF0d47a1),
+                      Color(0xFFf57c00),
+                    ],
                   ),
-                  GestureDetector(
-                    child: const Icon(
-                      MyFlutterApp.instagram_1,
-                      color: Colors.pink,
-                      size: 48,
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 16),
+                    // Social Media Icons - Modern Circular Design
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildSocialIcon(
+                            Icons.facebook_sharp,
+                            Color(0xFF1877F2),
+                            'https://www.facebook.com/klangvalley4locals/',
+                          ),
+                          _buildSocialIcon(
+                            MyFlutterApp.instagram_1,
+                            Color(0xFFE4405F),
+                            'https://www.instagram.com/klangvalley4locals/',
+                          ),
+                          _buildSocialIcon(
+                            MyFlutterApp.whatsapp,
+                            Color(0xFF25D366),
+                            'https://api.whatsapp.com/send?phone=60122200622',
+                          ),
+                          _buildSocialIcon(
+                            Icons.tiktok,
+                            Colors.black,
+                            'https://www.tiktok.com/@klangvalley4locals',
+                          ),
+                          _buildSocialIcon(
+                            Icons.public,
+                            Color(0xFFFF9800),
+                            'https://www.klangvalley4locals.com.my/',
+                          ),
+                        ],
+                      ),
                     ),
-                    onTap: () => _launchURL(
-                        'https://www.instagram.com/klangvalley4locals/'),
-                  ),
-                  GestureDetector(
-                    child: const Icon(
-                      MyFlutterApp.whatsapp,
-                      color: Colors.green,
-                      size: 48,
-                    ),
-                    onTap: () => _launchURL(
-                        'https://api.whatsapp.com/send?phone=60122200622'),
-                  ),
-                  GestureDetector(
-                    child: const Icon(
-                      Icons.tiktok,
-                      size: 48,
-                    ),
-                    onTap: () => _launchURL(
-                        'https://www.tiktok.com/@klangvalley4locals'),
-                  ),
-                  GestureDetector(
-                    child: const Icon(
-                      Icons.public,
-                      color: Colors.grey,
-                      size: 48,
-                    ),
-                    onTap: () =>
-                        _launchURL('https://www.klangvalley4locals.com.my/'),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                S.of(context).klHighlights,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
+                  ],
                 ),
               ),
-            ),
-            ImageCarousel(images: imagesHighlights, titles: titlesHighlights),
-             Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                S.of(context).recommendations,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
+
+              // Main Content Area
+              Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFFF5F5F5),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+                    topRight: Radius.circular(30),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 24),
+
+                    // Highlights Section Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Color(0xFFf57c00), Color(0xFFff6f00)],
+                              ),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            S.of(context).klHighlights,
+                            style: TextStyle(
+                              color: Color(0xFF1a237e),
+                              fontSize: 26.0,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
+                    ImageCarousel(
+                        images: imagesHighlights, titles: titlesHighlights),
+
+                    SizedBox(height: 32),
+
+                    // Recommendations Section Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 4,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Color(0xFFf57c00), Color(0xFFff6f00)],
+                              ),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            S.of(context).recommendations,
+                            style: TextStyle(
+                              color: Color(0xFF1a237e),
+                              fontSize: 26.0,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: 20),
+                    ImageCarousel2(images: imagesRmd, titles: titlesRmd),
+                    SizedBox(height: 24),
+                  ],
                 ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSocialIcon(IconData icon, Color color, String url) {
+    return GestureDetector(
+      onTap: () => _launchURL(url),
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.3),
+              blurRadius: 12,
+              offset: Offset(0, 4),
             ),
-            ImageCarousel2(images: imagesRmd, titles: titlesRmd),
-            // Continue adding more widgets for scrollable content
           ],
+        ),
+        child: Icon(
+          icon,
+          color: color,
+          size: 28,
         ),
       ),
     );
@@ -165,7 +263,6 @@ class ImageCarousel extends StatefulWidget {
 }
 
 class _ImageCarouselState extends State<ImageCarousel> {
-  // ignore: unused_field
   int _currentIndex = 0;
 
   @override
@@ -175,60 +272,137 @@ class _ImageCarouselState extends State<ImageCarousel> {
         CarouselSlider.builder(
           itemCount: widget.images.length,
           itemBuilder: (BuildContext context, int index, int realIndex) {
-            return Stack(
-              children: <Widget>[
-                GestureDetector(
+            return Container(
+              margin: EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 15,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/highlights-$index',
                         arguments: {'index': index, 'titles': widget.titles});
                   },
-                  child: CachedNetworkImage(
-                    imageUrl: widget.images[index],
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      height: 300,
-                    ),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                  ),
-                ),
-                Positioned(
-                  bottom: 30.0,
-                  left: 10.0,
-                  right: 10.0,
-                  child: Container(
-                    color:
-                        Colors.black.withOpacity(0.5), // Faded black background
-                    child: Center(
-                      // Center the text within the container
-                      child: Text(
-                        widget.titles[index],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
+                  child: Stack(
+                    children: <Widget>[
+                      CachedNetworkImage(
+                        imageUrl: widget.images[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        placeholder: (context, url) => Container(
+                          height: 320,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF0d47a1),
+                                Color(0xFFf57c00),
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
+                        errorWidget: (context, url, error) => Container(
+                          color: Color(0xFF0d47a1),
+                          child:
+                              Icon(Icons.error, color: Colors.white, size: 40),
+                        ),
                       ),
-                    ),
+                      // Gradient Overlay
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.7),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Title with modern styling
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFf57c00),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  'EXPLORE',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                widget.titles[index],
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.5),
+                                      offset: Offset(0, 2),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             );
           },
           options: CarouselOptions(
-            height: 300,
-            // aspectRatio: 16/9,
-            viewportFraction: 0.8,
+            height: 320,
+            viewportFraction: 0.85,
             initialPage: 0,
             enableInfiniteScroll: true,
             reverse: false,
             autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 3),
+            autoPlayInterval: const Duration(seconds: 4),
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
             autoPlayCurve: Curves.fastOutSlowIn,
             enlargeCenterPage: true,
-            enlargeFactor: 0.3,
+            enlargeFactor: 0.15,
             onPageChanged: (index, reason) {
               setState(() {
                 _currentIndex = index;
@@ -236,18 +410,19 @@ class _ImageCarouselState extends State<ImageCarousel> {
             },
           ),
         ),
+        SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: widget.images.map((image) {
-            int index = widget.images.indexOf(image);
+          children: widget.images.asMap().entries.map((entry) {
             return Container(
-              width: 8.0,
+              width: _currentIndex == entry.key ? 24.0 : 8.0,
               height: 8.0,
-              margin:
-                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+              margin: const EdgeInsets.symmetric(horizontal: 4.0),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentIndex == index ? Colors.blue : Colors.grey,
+                borderRadius: BorderRadius.circular(4),
+                color: _currentIndex == entry.key
+                    ? Color(0xFFf57c00)
+                    : Colors.grey.withOpacity(0.4),
               ),
             );
           }).toList(),
@@ -272,7 +447,6 @@ class ImageCarousel2 extends StatefulWidget {
 }
 
 class _ImageCarouselState2 extends State<ImageCarousel2> {
-  // ignore: unused_field
   int _currentIndex = 0;
 
   @override
@@ -282,61 +456,115 @@ class _ImageCarouselState2 extends State<ImageCarousel2> {
         CarouselSlider.builder(
           itemCount: widget.images.length,
           itemBuilder: (BuildContext context, int index, int realIndex) {
-            return Stack(
-              children: <Widget>[
-                GestureDetector(
+            return Container(
+              margin: EdgeInsets.symmetric(horizontal: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 10,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
                   onTap: () {
                     Navigator.pushNamed(context, '/rmd-$index',
                         arguments: {'index': index, 'titles': widget.titles});
                   },
-                  child: CachedNetworkImage(
-                    imageUrl: widget.images[index],
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      child: Center(child: CircularProgressIndicator()),
-                      height: 180,
-                    ),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error),
-                  ),
-                ),
-                Positioned(
-                  bottom: 30.0,
-                  left: 10.0,
-                  right: 10.0,
-                  child: Container(
-                    color:
-                        Colors.black.withOpacity(0.5), // Faded black background
-                    child: Center(
-                      // Center the text within the container
-                      child: Text(
-                        widget.titles[index],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
+                  child: Stack(
+                    children: <Widget>[
+                      CachedNetworkImage(
+                        imageUrl: widget.images[index],
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        placeholder: (context, url) => Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Color(0xFF0d47a1),
+                                Color(0xFFf57c00),
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
-                        textAlign: TextAlign.center,
+                        errorWidget: (context, url, error) => Container(
+                          color: Color(0xFF0d47a1),
+                          child:
+                              Icon(Icons.error, color: Colors.white, size: 32),
+                        ),
                       ),
-                    ),
+                      // Gradient Overlay
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withOpacity(0.6),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Title Card
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            widget.titles[index],
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.0,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             );
           },
           options: CarouselOptions(
-            height: 180,
-            aspectRatio: 16 / 9,
-            viewportFraction: 0.8,
+            height: 200,
+            viewportFraction: 0.85,
             initialPage: 0,
             enableInfiniteScroll: true,
             reverse: false,
             autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 3),
+            autoPlayInterval: const Duration(seconds: 4),
             autoPlayAnimationDuration: const Duration(milliseconds: 800),
             autoPlayCurve: Curves.fastOutSlowIn,
             enlargeCenterPage: true,
-            enlargeFactor: 0.3,
+            enlargeFactor: 0.15,
             onPageChanged: (index, reason) {
               setState(() {
                 _currentIndex = index;
@@ -344,18 +572,19 @@ class _ImageCarouselState2 extends State<ImageCarousel2> {
             },
           ),
         ),
+        SizedBox(height: 16),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: widget.images.map((image) {
-            int index = widget.images.indexOf(image);
+          children: widget.images.asMap().entries.map((entry) {
             return Container(
-              width: 8.0,
+              width: _currentIndex == entry.key ? 24.0 : 8.0,
               height: 8.0,
-              margin:
-                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0),
+              margin: const EdgeInsets.symmetric(horizontal: 4.0),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentIndex == index ? Colors.blue : Colors.grey,
+                borderRadius: BorderRadius.circular(4),
+                color: _currentIndex == entry.key
+                    ? Color(0xFFf57c00)
+                    : Colors.grey.withOpacity(0.4),
               ),
             );
           }).toList(),
