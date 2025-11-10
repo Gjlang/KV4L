@@ -24,6 +24,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'ebook_page.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'generated/l10n.dart';
+import 'package:klangvalley4locals/itinerary_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -160,6 +161,7 @@ class _MyAppState extends State<MyApp> {
         '/rmd-3': (context) => const Spa(),
         '/rmd-4': (context) => const MedicalT(),
         '/ebook': (context) => Ebook(),
+        '/itinerary': (ctx) => const ItineraryPage(),
       },
     );
   }
@@ -364,6 +366,7 @@ class _MyHomePageState extends State<MyHomePage>
             },
             selectedIndex: currentPageIndex,
             destinations: <Widget>[
+              // 🏙 Home
               NavigationDestination(
                 selectedIcon: Container(
                   padding: const EdgeInsets.all(8),
@@ -377,12 +380,29 @@ class _MyHomePageState extends State<MyHomePage>
                     size: 24,
                   ),
                 ),
-                icon: const Icon(
-                  Icons.location_city_outlined,
-                  size: 24,
-                ),
+                icon: const Icon(Icons.location_city_outlined, size: 24),
                 label: S.of(context).home,
               ),
+
+              // 🗺 Itinerary / Planner
+              NavigationDestination(
+                selectedIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.route_rounded,
+                    color: Color(0xFF1A1A2E),
+                    size: 24,
+                  ),
+                ),
+                icon: const Icon(Icons.route_outlined, size: 24),
+                label: 'Planner',
+              ),
+
+              // 📖 Ebook
               NavigationDestination(
                 selectedIcon: Container(
                   padding: const EdgeInsets.all(8),
@@ -396,10 +416,7 @@ class _MyHomePageState extends State<MyHomePage>
                     size: 24,
                   ),
                 ),
-                icon: const Icon(
-                  Icons.auto_stories_outlined,
-                  size: 24,
-                ),
+                icon: const Icon(Icons.auto_stories_outlined, size: 24),
                 label: S.of(context).ebook,
               ),
             ],
@@ -409,6 +426,7 @@ class _MyHomePageState extends State<MyHomePage>
           opacity: _fadeAnimation,
           child: [
             HomeScreen(),
+            const ItineraryPage(),
             const BlogListScreen(),
             Ebook(),
           ][currentPageIndex],
