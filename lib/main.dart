@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:klangvalley4locals/blog_page.dart';
 import 'package:klangvalley4locals/contact_us.dart';
 import 'package:klangvalley4locals/explorekl.dart';
@@ -17,7 +18,6 @@ import 'package:klangvalley4locals/home_page.dart';
 import 'package:klangvalley4locals/about_us.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:klangvalley4locals/shop.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -27,22 +27,28 @@ import 'generated/l10n.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+
   MobileAds.instance.initialize();
   CachedNetworkImage.logLevel = CacheManagerLogLevel.debug;
-  // Check the app version and build number
 
   await FlutterDownloader.initialize(
-      debug:
-      true, // optional: set to false to disable printing logs to console (default: true)
-      ignoreSsl:
-      true // option: set to false to disable working with http links (default: false)
+    debug: true,
+    ignoreSsl: true,
   );
 
   runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  // Add setLocale method to update locale dynamically
   static void setLocale(BuildContext context, Locale newLocale) {
     _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
     state?.changeLocale(newLocale);
@@ -55,7 +61,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   Locale? _locale;
 
-  // Method to change the locale
   void changeLocale(Locale locale) {
     setState(() {
       _locale = locale;
@@ -69,16 +74,69 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color.fromARGB(255, 0, 71, 133)),
+          seedColor: const Color(0xFF1A1A2E),
+          primary: const Color(0xFF1A1A2E),
+          secondary: const Color(0xFF0F3460),
+          surface: Colors.white,
+          brightness: Brightness.light,
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
         useMaterial3: true,
+        fontFamily: 'System',
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          centerTitle: false,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          titleTextStyle: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 2.0,
+            color: Colors.white,
+          ),
+        ),
+        navigationBarTheme: NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          elevation: 8,
+          height: 70,
+          indicatorColor: const Color(0xFF1A1A2E).withOpacity(0.1),
+          indicatorShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1A1A2E),
+                letterSpacing: 0.5,
+              );
+            }
+            return const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFF9CA3AF),
+              letterSpacing: 0.3,
+            );
+          }),
+        ),
+        cardTheme: CardThemeData(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 6,
+        ),
       ),
-      // Add locale to MaterialApp
       locale: _locale,
-      // Add supported locales
       supportedLocales: S.delegate.supportedLocales,
-      // Add localization delegates
       localizationsDelegates: const [
-        S.delegate, // Localization delegate for the app
+        S.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -102,7 +160,7 @@ class _MyAppState extends State<MyApp> {
         '/rmd-3': (context) => const Spa(),
         '/rmd-4': (context) => const MedicalT(),
         '/ebook': (context) => Ebook(),
-      }
+      },
     );
   }
 }
@@ -116,190 +174,33 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+class _MyHomePageState extends State<MyHomePage>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   int currentPageIndex = 0;
-
-  void _selectLanguage(String language) {
-    setState(() {
-      Locale newLocale;
-      Map<String, Locale> localeMap = {
-        'ms': Locale('ms', 'MY'), // Malay
-        'zh': Locale('zh', 'CN'), // Mandarin
-        'ta': Locale('ta', 'IN'), // Tamil
-        'hi': Locale('hi', 'IN'), // Hindi
-        'th': Locale('th', 'TH'), // Thai
-        'fil': Locale('fil', 'FIL'), // Filipino
-        'id': Locale('id', 'ID'), // Indonesian
-        'es': Locale('es', 'ES'), // Spanish
-        'pt': Locale('pt', 'BR'), // Portuguese
-        'fr': Locale('fr', 'FR'), // French
-        'ru': Locale('ru', 'RU'), // Russian
-        'en': Locale('en', 'US'), // Default to English
-      };
-      newLocale = localeMap[language] ?? Locale('en', 'US');
-      MyApp.setLocale(context, newLocale);
-    });
-
-    // Show a snackbar to confirm language change
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text({
-          'ms': 'Bahasa Malaysia',
-          'zh': '中文',
-          'ta': 'தமிழ்',
-          'hi': 'हिंदी',
-          'th': 'ไทย.',
-          'es': 'Español',
-          'fil': 'Filipino',
-          'id': 'Bahasa Indonesia',
-          'pt': 'Português',
-          'fr': 'français',
-          'ru': 'русский',
-          'en': 'English',
-        }[language]!),
-      ),
-    );
-
-    Navigator.pop(context); // Close the drawer after selecting a language
-  }
-
-  final String desiredVersion = '1.5.0'; // Replace with your desired version
-
-  late BannerAd _bannerAd;
   DateTime? currentBackPressTime;
-
-  bool isDialogShown = false; // Add a flag to track if the dialog is shown
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // // Create a BannerAd instance
-    // _bannerAd = BannerAd(
-    //   adUnitId: 'ca-app-pub-7002644831588730/4427349537',
-    //   size: AdSize.mediumRectangle,
-    //   request: const AdRequest(),
-    //   listener: const BannerAdListener(),
-    // );
-    //
-    // // Load the ad
-    // _bannerAd.load();
-    //
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   // Use addPostFrameCallback to ensure the dialog is shown after the first frame
-    //
-    //   _checkVersionAndShowDialog();
-    //   if (!isDialogShown) {
-    //     fetchDataFromApi();
-    //   }
-    // });
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   _showVoucherPopup(); // Call the function to show the pop-up on app launch
-    // });
-  }
-
-  // Function to display the pop-up message with the "View" button
-  // void _showVoucherPopup() {
-  //   showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('New Vouchers Available!'),
-  //         content: const Text('New vouchers have been added. Check them out!'),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog
-  //             },
-  //             child: const Text('Cancel'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop(); // Close the dialog first
-  //             },
-  //             child: const Text('View'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-
-
-  Future<void> _checkVersionAndShowDialog() async {
-    // Check for an update using Google's In-App Update API
-    try {
-      AppUpdateInfo updateInfo = await InAppUpdate.checkForUpdate();
-      if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {
-        if (updateInfo.immediateUpdateAllowed) {
-          // Trigger immediate update
-          InAppUpdate.performImmediateUpdate();
-        } else if (updateInfo.flexibleUpdateAllowed) {
-          // Trigger flexible update
-          InAppUpdate.startFlexibleUpdate().then((_) {
-            InAppUpdate.completeFlexibleUpdate();
-          });
-        }
-      }
-    } catch (e) {
-      print("Error checking for updates: $e");
-    }
-
-    // Custom version check remains (if needed)
-    final packageInfo = await PackageInfo.fromPlatform();
-    final currentVersion = packageInfo.version;
-    final currentBuildNumber = packageInfo.buildNumber;
-
-    final desiredVersionAndBuild = await _fetchDesiredVersionAndBuild();
-    final String desiredVersion = desiredVersionAndBuild['version']!;
-    final String desiredBuildNumber = desiredVersionAndBuild['buildNumber']!;
-
-
-  }
-
-  Future<Map<String, String>> _fetchDesiredVersionAndBuild() async {
-    final response = await http.post(
-      Uri.parse(
-          'https://www.kltheguide.com.my/admin/functions.php'), // Replace with your API endpoint
-      body: {'appAdsSettings': 'appAdsSettings'},
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
     );
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      print(jsonData);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
-      return {
-        'version': jsonData['desiredVersion'],
-        'buildNumber': jsonData['desiredBuildNumber'],
-      };
-    } else {
-      throw Exception('Failed to fetch desired version and build number');
-    }
-  }
-
-  bool _isUpdateRequired(String currentVersion, String desiredVersion,
-      String currentBuildNumber, String desiredBuildNumber) {
-    List<int> currentVersionParts =
-    currentVersion.split('.').map(int.parse).toList();
-    List<int> desiredVersionParts =
-    desiredVersion.split('.').map(int.parse).toList();
-
-    for (int i = 0; i < currentVersionParts.length; i++) {
-      if (currentVersionParts[i] < desiredVersionParts[i]) {
-        return true;
-      } else if (currentVersionParts[i] > desiredVersionParts[i]) {
-        return false;
-      }
-    }
-
-    // If versions are equal, check build numbers
-    return int.parse(currentBuildNumber) < int.parse(desiredBuildNumber);
+    _animationController.forward();
   }
 
   @override
   void dispose() {
+    _animationController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -308,42 +209,86 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     if (state == AppLifecycleState.resumed) {
-      currentBackPressTime = null; // Reset the back button press time
+      currentBackPressTime = null;
     }
   }
 
+  void _selectLanguage(String language) {
+    final localeMap = {
+      'ms': const Locale('ms', 'MY'),
+      'zh': const Locale('zh', 'CN'),
+      'ta': const Locale('ta', 'IN'),
+      'hi': const Locale('hi', 'IN'),
+      'th': const Locale('th', 'TH'),
+      'fil': const Locale('fil', 'FIL'),
+      'id': const Locale('id', 'ID'),
+      'es': const Locale('es', 'ES'),
+      'pt': const Locale('pt', 'BR'),
+      'fr': const Locale('fr', 'FR'),
+      'ru': const Locale('ru', 'RU'),
+      'en': const Locale('en', 'US'),
+    };
 
+    final languageNames = {
+      'ms': 'Bahasa Malaysia',
+      'zh': '中文',
+      'ta': 'தமிழ்',
+      'hi': 'हिंदी',
+      'th': 'ไทย',
+      'es': 'Español',
+      'fil': 'Filipino',
+      'id': 'Bahasa Indonesia',
+      'pt': 'Português',
+      'fr': 'Français',
+      'ru': 'Русский',
+      'en': 'English',
+    };
 
-  void _showAlertDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Welcome'),
-          content: Text('This is an example AlertDialog on app launch.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('OK'),
+    MyApp.setLocale(context, localeMap[language] ?? const Locale('en', 'US'));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              languageNames[language] ?? 'English',
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ],
-        );
-      },
+        ),
+        backgroundColor: const Color(0xFF1A1A2E),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 2),
+      ),
     );
+
+    Navigator.pop(context);
   }
 
   Future<bool> _onWillPop() async {
     final now = DateTime.now();
     if (currentBackPressTime == null ||
-        now.difference(currentBackPressTime!) > Duration(seconds: 2)) {
+        now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
       currentBackPressTime = now;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Press back again to exit'),
-          duration: Duration(seconds: 2),
+          content: Row(
+            children: const [
+              Icon(Icons.exit_to_app, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Text(
+                'Press back again to exit',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1A1A2E),
+          duration: const Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
         ),
       );
       return false;
@@ -351,312 +296,266 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
     return true;
   }
 
-  // Future<List<ImageData>> fetchImageUrls() async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('https://www.kltheguide.com.my/admin/functions.php'),
-  //       body: {'appAdsURL': 'appAdsURL'},
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final List<dynamic> jsonData = json.decode(response.body);
-  //       final List<ImageData> imageUrls = jsonData.map((item) {
-  //         return ImageData(
-  //           imageUrl: item['imageURL'] as String,
-  //           actionUrl: item['URL'] as String,
-  //         );
-  //       }).toList();
-  //
-  //       return imageUrls;
-  //     } else {
-  //       throw Exception('Failed to load image URLs from the API');
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching image URLs: $e');
-  //     return []; // Return an empty list in case of an error
-  //   }
-  // }
-
-  // Future<void> fetchDataFromApi() async {
-  //   try {
-  //     final response = await http.post(
-  //       Uri.parse('https://www.kltheguide.com.my/admin/functions.php'),
-  //       body: {'appAdsSettings': 'appAdsSettings'},
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       final jsonData = json.decode(response.body);
-  //       var admobrandomswitch = jsonData['admobrandomswitch'];
-  //       print(isDialogShown);
-  //       int? switch2 = int.parse(admobrandomswitch);
-  //
-  //       // Set a fixed delay of 30 seconds
-  //       int delayInSeconds = 30;
-  //
-  //       final Random random = Random();
-  //
-  //       if (switch2 == 1) {
-  //         if (random.nextInt(5) == 1) {
-  //           // Show the AdMob ad
-  //           if (isDialogShown) {
-  //             _showWelcomeDialog(delayInSeconds);
-  //           } else {
-  //             _showWelcomeDialog(0);
-  //             isDialogShown = true;
-  //           }
-  //         } else {
-  //           // Show custom ads with a fixed delay of 7 seconds
-  //           final List<ImageData> imageDatas = await fetchImageUrls();
-  //           if (imageDatas.isNotEmpty) {
-  //             final randomImageData =
-  //             imageDatas[random.nextInt(imageDatas.length)];
-  //             if (isDialogShown) {
-  //               _showRandomPopup(delayInSeconds, randomImageData);
-  //             } else {
-  //               _showRandomPopup(0, randomImageData);
-  //               isDialogShown = true;
-  //             }
-  //           }
-  //         }
-  //       } else {
-  //         // Handle cases when 'switch2' is not 1
-  //         final List<ImageData> imageDatas = await fetchImageUrls();
-  //         if (imageDatas.isNotEmpty) {
-  //           final randomImageData =
-  //           imageDatas[random.nextInt(imageDatas.length)];
-  //           if (isDialogShown) {
-  //             _showRandomPopup(delayInSeconds, randomImageData);
-  //           } else {
-  //             _showRandomPopup(0, randomImageData);
-  //             isDialogShown = true;
-  //           }
-  //         }
-  //       }
-  //     } else {
-  //       throw Exception('Failed to load data from the API');
-  //     }
-  //   } catch (e) {
-  //     print('Error fetching data from API: $e');
-  //   }
-  // }
-  //
-  // void _showRandomPopup(int delayInSeconds, ImageData imageData) async {
-  //   Future.delayed(Duration(seconds: delayInSeconds), () async {
-  //     if (imageData != 'null') {
-  //       final randomImageUrl = imageData.imageUrl;
-  //
-  //       showDialog(
-  //         barrierDismissible: false,
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return FutureBuilder<void>(
-  //             future: Future.delayed(Duration(seconds: 0), () {}),
-  //             builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-  //               if (snapshot.connectionState == ConnectionState.waiting) {
-  //                 // While waiting for the delay, show a loading indicator
-  //                 return Center(child: CircularProgressIndicator());
-  //               } else {
-  //                 // After the delay, display the image and actions
-  //                 return WillPopScope(
-  //                   onWillPop: () async {
-  //                     return false;
-  //                   },
-  //                   child: AlertDialog(
-  //                     shadowColor: Colors.transparent,
-  //                     buttonPadding: EdgeInsets.zero,
-  //                     contentPadding: EdgeInsets.zero,
-  //                     actionsPadding: EdgeInsets.zero,
-  //                     insetPadding: EdgeInsets.zero,
-  //                     actionsAlignment: MainAxisAlignment.center,
-  //                     // title: Text('Random Popup'),
-  //                     backgroundColor: Colors.transparent,
-  //                     content: GestureDetector(
-  //                       child: Image.network(randomImageUrl),
-  //                       onTap: () {
-  //                         if (imageData.actionUrl.isNotEmpty) {
-  //                           print(Uri.decodeFull(imageData.actionUrl));
-  //                           _launchURL(Uri.decodeFull(imageData.actionUrl));
-  //                         }
-  //                       },
-  //                     ),
-  //                     actions: <Widget>[
-  //                       TextButton(
-  //                         onPressed: () {
-  //                           Navigator.of(context).pop(); // Close the dialog
-  //                           fetchDataFromApi();
-  //                         },
-  //                         child: Icon(
-  //                           Icons.cancel_outlined,
-  //                           size: 32,
-  //                           color: Colors.white,
-  //                         ),
-  //                       ),
-  //                     ],
-  //                   ),
-  //                 );
-  //               }
-  //             },
-  //           );
-  //         },
-  //       );
-  //     }
-  //   });
-  // }
-
-  // void _showWelcomeDialog(int delaySec) {
-  //   // Add a delay of 3 seconds before showing the dialog
-  //   Future.delayed(Duration(seconds: delaySec), () {
-  //     showDialog(
-  //       barrierDismissible: false,
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return WillPopScope(
-  //           onWillPop: () async {
-  //             return false;
-  //           },
-  //           child: AlertDialog(
-  //             buttonPadding: EdgeInsets.zero,
-  //             contentPadding: EdgeInsets.zero,
-  //             actionsPadding: EdgeInsets.zero,
-  //             insetPadding: EdgeInsets.zero,
-  //             actionsAlignment: MainAxisAlignment.center,
-  //             // title: Text('Random Popup'),
-  //             backgroundColor: Colors.transparent,
-  //             content: SizedBox(
-  //               height: 250,
-  //               width: 300,
-  //               child: AdWidget(
-  //                 ad: _bannerAd,
-  //               ),
-  //             ),
-  //             actions: [
-  //               TextButton(
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop(); // Close the dialog
-  //                   fetchDataFromApi();
-  //                 },
-  //                 child: Icon(
-  //                   Icons.cancel_outlined,
-  //                   size: 32,
-  //                   color: Colors.white,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         );
-  //       },
-  //     );
-  //   });
-  // }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        appBar: AppBar(
-          title:
-          const Text("KLANG VALLEY FOR LOCALS", style: TextStyle(color: Colors.white)),
-          backgroundColor: const Color.fromARGB(255, 0, 71, 133),
-          iconTheme: const IconThemeData(color: Colors.white),
-          actions: const <Widget>[
-            AppBarMore(),
-          ],
-        ),
-        // Move the drawer here inside the Scaffold
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Color.fromARGB(255, 0, 71, 133),
+        extendBodyBehindAppBar: false,
+        appBar: PreferredSize(
+          preferredSize: const Size.fromHeight(60),
+          child: AppBar(
+            flexibleSpace: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF1A1A2E),
+                    Color(0xFF0F3460),
+                    Color(0xFF1A1A2E),
+                  ],
                 ),
-                child: Text(
-                  S.of(context).pickALanguage,
-                  style: const TextStyle(
+              ),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.location_city_rounded,
                     color: Colors.white,
-                    fontSize: 24,
+                    size: 20,
                   ),
                 ),
+                const SizedBox(width: 12),
+                const Text("KLANG VALLEY"),
+              ],
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
+            actions: const <Widget>[
+              AppBarMore(),
+              SizedBox(width: 8),
+            ],
+          ),
+        ),
+        drawer: _buildDrawer(),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 20,
+                offset: const Offset(0, -5),
               ),
-              ListTile(
-                title: const Text('Bahasa Malaysia'),
-                onTap: () => _selectLanguage('ms'),
+            ],
+          ),
+          child: NavigationBar(
+            onDestinationSelected: (int index) {
+              setState(() {
+                currentPageIndex = index;
+              });
+              _animationController.reset();
+              _animationController.forward();
+            },
+            selectedIndex: currentPageIndex,
+            destinations: <Widget>[
+              NavigationDestination(
+                selectedIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.location_city_rounded,
+                    color: Color(0xFF1A1A2E),
+                    size: 24,
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.location_city_outlined,
+                  size: 24,
+                ),
+                label: S.of(context).home,
               ),
-              ListTile(
-                title: const Text('English'),
-                onTap: () => _selectLanguage('en'),
-              ),
-              ListTile(
-                title: const Text('Mandarin'),
-                onTap: () => _selectLanguage('zh'),
-              ),
-              ListTile(
-                title: const Text('Tamil'),
-                onTap: () => _selectLanguage('ta'),
-              ),
-              ListTile(
-                title: const Text('Hindi'),
-                onTap: () => _selectLanguage('hi'),
-              ),
-              ListTile(
-                title: const Text('Thai'),
-                onTap: () => _selectLanguage('th'),
-              ),
-              ListTile(
-                title: const Text('Tagalog'),
-                onTap: () => _selectLanguage('fil'),
-              ),
-              ListTile(
-                title: const Text('Bahasa Indonesia'),
-                onTap: () => _selectLanguage('id'),
-              ),
-              ListTile(
-                title: const Text('Spanish'),
-                onTap: () => _selectLanguage('es'),
-              ),
-              ListTile(
-                title: const Text('Portuguese'),
-                onTap: () => _selectLanguage('pt'),
-              ),
-              ListTile(
-                title: const Text('French'),
-                onTap: () => _selectLanguage('fr'),
-              ),
-              ListTile(
-                title: const Text('Russian'),
-                onTap: () => _selectLanguage('ru'),
+              NavigationDestination(
+                selectedIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.auto_stories_rounded,
+                    color: Color(0xFF1A1A2E),
+                    size: 24,
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.auto_stories_outlined,
+                  size: 24,
+                ),
+                label: S.of(context).ebook,
               ),
             ],
           ),
         ),
-        bottomNavigationBar: NavigationBar(
-          onDestinationSelected: (int index) {
-            setState(() {
-              currentPageIndex = index;
-            });
-          },
-          selectedIndex: currentPageIndex,
-          destinations: <Widget>[
-            NavigationDestination(
-                selectedIcon:
-                Icon(Icons.home, color: Color.fromARGB(255, 0, 71, 133)),
-                icon: Icon(Icons.home_outlined),
-                label: S.of(context).home),
-            NavigationDestination(
-                selectedIcon: Icon(Icons.menu_book,
-                    color: Color.fromARGB(255, 0, 71, 133)),
-                icon: Icon(Icons.menu_book_outlined),
-                label: S.of(context).ebook),
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: [
+            HomeScreen(),
+            const BlogListScreen(),
+            Ebook(),
+          ][currentPageIndex],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    final languages = [
+      {'code': 'en', 'name': 'English', 'icon': '🇬🇧'},
+      {'code': 'ms', 'name': 'Bahasa Malaysia', 'icon': '🇲🇾'},
+      {'code': 'zh', 'name': 'Mandarin', 'icon': '🇨🇳'},
+      {'code': 'ta', 'name': 'Tamil', 'icon': '🇮🇳'},
+      {'code': 'hi', 'name': 'Hindi', 'icon': '🇮🇳'},
+      {'code': 'th', 'name': 'Thai', 'icon': '🇹🇭'},
+      {'code': 'fil', 'name': 'Tagalog', 'icon': '🇵🇭'},
+      {'code': 'id', 'name': 'Bahasa Indonesia', 'icon': '🇮🇩'},
+      {'code': 'es', 'name': 'Spanish', 'icon': '🇪🇸'},
+      {'code': 'pt', 'name': 'Portuguese', 'icon': '🇵🇹'},
+      {'code': 'fr', 'name': 'French', 'icon': '🇫🇷'},
+      {'code': 'ru', 'name': 'Russian', 'icon': '🇷🇺'},
+    ];
+
+    return Drawer(
+      child: Container(
+        color: const Color(0xFFF8F9FA),
+        child: Column(
+          children: [
+            Container(
+              height: 200,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF1A1A2E),
+                    Color(0xFF0F3460),
+                    Color(0xFF16213E),
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.translate_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        S.of(context).pickALanguage,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Select your preferred language',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                itemCount: languages.length,
+                itemBuilder: (context, index) {
+                  final lang = languages[index];
+                  return Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 4,
+                      ),
+                      leading: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A2E).withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          lang['icon']!,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
+                      title: Text(
+                        lang['name']!,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF1A1A2E),
+                        ),
+                      ),
+                      trailing: const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Color(0xFF9CA3AF),
+                        size: 20,
+                      ),
+                      onTap: () => _selectLanguage(lang['code']!),
+                    ),
+                  );
+                },
+              ),
+            ),
           ],
         ),
-        body: [
-          HomeScreen(),
-          const BlogListScreen(),
-          Ebook(),
-          // EventScreen(),
-        ][currentPageIndex],
       ),
     );
   }
@@ -668,33 +567,84 @@ class AppBarMore extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert),
+      icon: const Icon(Icons.more_vert_rounded),
       color: Colors.white,
-      onSelected: (value) {
-        // Handle the item selection here.
-        if (value == S.of(context).contactUs) {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => ContactUsPage(),
-          ));
-        } else if (value == S.of(context).aboutUs) {
-          Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => AboutUsPage(),
-          ));
-        }
-        // Add more options for additional pages as needed.
-      },
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 8,
+      offset: const Offset(0, 50),
       itemBuilder: (BuildContext context) {
         return <PopupMenuEntry<String>>[
           PopupMenuItem<String>(
             value: S.of(context).aboutUs,
-            child: Text(S.of(context).aboutUs),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline_rounded,
+                    size: 18,
+                    color: Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  S.of(context).aboutUs,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
+          const PopupMenuDivider(height: 1),
           PopupMenuItem<String>(
             value: S.of(context).contactUs,
-            child: Text(S.of(context).contactUs),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.mail_outline_rounded,
+                    size: 18,
+                    color: Color(0xFF1A1A2E),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  S.of(context).contactUs,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
           ),
-          // Add more PopupMenuItem entries for additional pages.
         ];
+      },
+      onSelected: (value) {
+        if (value == S.of(context).contactUs) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => ContactUsPage()),
+          );
+        } else if (value == S.of(context).aboutUs) {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => AboutUsPage()),
+          );
+        }
       },
     );
   }
@@ -707,10 +657,10 @@ class MyFlutterApp {
   static const String? _kFontPkg = null;
 
   static const IconData instagram_1 =
-  IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+      IconData(0xe800, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 
   static const IconData whatsapp =
-  IconData(0xf232, fontFamily: _kFontFam, fontPackage: _kFontPkg);
+      IconData(0xf232, fontFamily: _kFontFam, fontPackage: _kFontPkg);
 }
 
 void _launchURL(url) async {

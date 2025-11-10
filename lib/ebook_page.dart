@@ -48,7 +48,6 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
   List<EbookModel> savedEbooks = [];
   bool isLoading = true;
 
-  // Sample ebooks (you can expand this list)
   final List<EbookModel> availableEbooks = [
     EbookModel(
       id: '106',
@@ -57,7 +56,6 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
       pdfUrl: 'https://www.klangvalley4locals.com.my/ebook-details.php?id=106',
       savedDate: DateTime.now(),
     ),
-    // Add more ebooks here as needed
   ];
 
   @override
@@ -92,14 +90,11 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
   Future<void> _saveEbook(EbookModel ebook) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Check if already saved
     if (savedEbooks.any((e) => e.id == ebook.id)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('E-book already saved!'),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-        ),
+      _showSnackBar(
+        'Already in your library',
+        Icons.info_outline,
+        const Color(0xFF0F3460),
       );
       return;
     }
@@ -111,18 +106,14 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
 
     setState(() {});
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('E-book saved successfully!'),
-        backgroundColor: const Color(0xFF25D366),
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: 'View',
-          textColor: Colors.white,
-          onPressed: () {
-            _tabController.animateTo(1);
-          },
-        ),
+    _showSnackBar(
+      'Added to library',
+      Icons.check_circle_outline,
+      const Color(0xFF1A1A2E),
+      action: SnackBarAction(
+        label: 'View',
+        textColor: Colors.white,
+        onPressed: () => _tabController.animateTo(1),
       ),
     );
   }
@@ -136,11 +127,29 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
 
     setState(() {});
 
+    _showSnackBar(
+      'Removed from library',
+      Icons.delete_outline,
+      const Color(0xFF0F3460),
+    );
+  }
+
+  void _showSnackBar(String message, IconData icon, Color color,
+      {SnackBarAction? action}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('E-book removed from saved'),
-        backgroundColor: Colors.red,
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Text(message, style: const TextStyle(fontWeight: FontWeight.w600)),
+          ],
+        ),
+        backgroundColor: color,
         behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: action,
       ),
     );
   }
@@ -150,11 +159,10 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Could not launch $url'),
-          backgroundColor: Colors.red,
-        ),
+      _showSnackBar(
+        'Could not open e-book',
+        Icons.error_outline,
+        Colors.red,
       );
     }
   }
@@ -162,74 +170,110 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'E-Book Library',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(110),
+        child: AppBar(
+          elevation: 0,
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF1A1A2E),
+                  Color(0xFF0F3460),
+                  Color(0xFF1A1A2E),
+                ],
+              ),
+            ),
           ),
-        ),
-        backgroundColor: const Color.fromARGB(255, 0, 71, 133),
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: const Color(0xFFFF8C42),
-          indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white60,
-          labelStyle: const TextStyle(fontWeight: FontWeight.bold),
-          tabs: const [
-            Tab(text: 'Explore'),
-            Tab(text: 'Saved'),
-          ],
-        ),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black,
-              const Color(0xFF0A1128),
-              Colors.black,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'E-Book Library',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 20,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                'Your digital city guide',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: Colors.white,
+            indicatorWeight: 3,
+            indicatorSize: TabBarIndicatorSize.label,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white60,
+            labelStyle: const TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
+              letterSpacing: 0.5,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
+            tabs: const [
+              Tab(
+                icon: Icon(Icons.explore_outlined, size: 20),
+                text: 'Explore',
+              ),
+              Tab(
+                icon: Icon(Icons.bookmarks_outlined, size: 20),
+                text: 'My Library',
+              ),
             ],
           ),
         ),
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildExploreTab(),
-            _buildSavedTab(),
-          ],
-        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildExploreTab(),
+          _buildSavedTab(),
+        ],
       ),
     );
   }
 
   Widget _buildExploreTab() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           const Text(
-            'Discover E-Books',
+            'Discover Guides',
             style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1A1A2E),
+              letterSpacing: 0.3,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
-            'Explore guides about Klang Valley',
+            'Explore Klang Valley with our curated e-books',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.7),
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w400,
             ),
           ),
           const SizedBox(height: 24),
@@ -248,7 +292,7 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
     if (isLoading) {
       return const Center(
         child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF8C42)),
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1A1A2E)),
         ),
       );
     }
@@ -258,25 +302,50 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.bookmark_border_rounded,
-              size: 80,
-              color: Colors.white.withOpacity(0.3),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1A1A2E).withOpacity(0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.bookmarks_outlined,
+                size: 64,
+                color: Colors.grey[400],
+              ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'No saved e-books yet',
+            const SizedBox(height: 24),
+            const Text(
+              'Your Library is Empty',
               style: TextStyle(
-                fontSize: 18,
-                color: Colors.white.withOpacity(0.7),
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF1A1A2E),
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Start exploring and save your favorites!',
+              'Start exploring to build your collection',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white.withOpacity(0.5),
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: () => _tabController.animateTo(0),
+              icon: const Icon(Icons.explore_outlined),
+              label: const Text('Explore E-books'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF1A1A2E),
+                side: const BorderSide(color: Color(0xFF1A1A2E), width: 2),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -285,11 +354,11 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -297,19 +366,21 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'My Library',
+                    'My Collection',
                     style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF1A1A2E),
+                      letterSpacing: 0.3,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${savedEbooks.length} ${savedEbooks.length == 1 ? 'e-book' : 'e-books'} saved',
+                    '${savedEbooks.length} ${savedEbooks.length == 1 ? 'e-book' : 'e-books'}',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -338,24 +409,13 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF1A2947),
-            const Color(0xFF0D1B2A),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: const Color(0xFFFF8C42).withOpacity(0.3),
-          width: 1,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF8C42).withOpacity(0.1),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF1A1A2E).withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -363,35 +423,49 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
         color: Colors.transparent,
         child: InkWell(
           onTap: onOpen,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                // E-book Cover Image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: CachedNetworkImage(
-                    imageUrl: ebook.imageUrl,
-                    fit: BoxFit.cover,
-                    height: 140,
-                    width: 100,
-                    placeholder: (context, url) => Container(
+                // E-book Cover
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: ebook.imageUrl,
+                      fit: BoxFit.cover,
                       height: 140,
                       width: 100,
-                      color: Colors.grey[800],
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          valueColor:
-                              AlwaysStoppedAnimation<Color>(Color(0xFFFF8C42)),
+                      placeholder: (context, url) => Container(
+                        height: 140,
+                        width: 100,
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFF1A1A2E)),
+                          ),
                         ),
                       ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      height: 140,
-                      width: 100,
-                      color: Colors.grey[800],
-                      child: const Icon(Icons.error, color: Colors.red),
+                      errorWidget: (context, url, error) => Container(
+                        height: 140,
+                        width: 100,
+                        color: Colors.grey[200],
+                        child:
+                            Icon(Icons.error_outline, color: Colors.grey[400]),
+                      ),
                     ),
                   ),
                 ),
@@ -404,9 +478,10 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
                       Text(
                         ebook.title,
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1A1A2E),
+                          letterSpacing: 0.2,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -414,62 +489,82 @@ class _EbookState extends State<Ebook> with SingleTickerProviderStateMixin {
                       const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF00D4FF).withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: const Color(0xFF00D4FF).withOpacity(0.3),
-                            width: 1,
-                          ),
+                          horizontal: 10,
+                          vertical: 5,
                         ),
-                        child: const Text(
-                          'Travel Guide',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF00D4FF),
-                            fontWeight: FontWeight.bold,
-                          ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A2E).withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.location_city_outlined,
+                              size: 12,
+                              color: Color(0xFF1A1A2E),
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'City Guide',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF1A1A2E),
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           // Read Button
                           Expanded(
-                            child: ElevatedButton.icon(
+                            child: ElevatedButton(
                               onPressed: onOpen,
-                              icon:
-                                  const Icon(Icons.menu_book_rounded, size: 16),
-                              label: const Text('Read'),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF8C42),
+                                backgroundColor: const Color(0xFF1A1A2E),
                                 foregroundColor: Colors.white,
                                 padding:
-                                    const EdgeInsets.symmetric(vertical: 8),
+                                    const EdgeInsets.symmetric(vertical: 10),
+                                elevation: 0,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Read Now',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           // Save/Remove Button
-                          IconButton(
-                            onPressed: isSaved ? onRemove : onSave,
-                            icon: Icon(
-                              isSaved ? Icons.bookmark : Icons.bookmark_border,
+                          Container(
+                            decoration: BoxDecoration(
                               color: isSaved
-                                  ? const Color(0xFFFFB800)
-                                  : Colors.white60,
+                                  ? const Color(0xFF1A1A2E).withOpacity(0.1)
+                                  : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            style: IconButton.styleFrom(
-                              backgroundColor: isSaved
-                                  ? const Color(0xFFFFB800).withOpacity(0.15)
-                                  : Colors.white.withOpacity(0.1),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                            child: IconButton(
+                              onPressed: isSaved ? onRemove : onSave,
+                              icon: Icon(
+                                isSaved
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border_rounded,
+                                color: isSaved
+                                    ? const Color(0xFF1A1A2E)
+                                    : Colors.grey[600],
+                                size: 22,
                               ),
+                              tooltip: isSaved ? 'Remove' : 'Save',
                             ),
                           ),
                         ],
