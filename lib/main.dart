@@ -25,6 +25,7 @@ import 'ebook_page.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'generated/l10n.dart';
 import 'package:klangvalley4locals/itinerary_page.dart';
+import 'ratings_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -384,6 +385,23 @@ class _MyHomePageState extends State<MyHomePage>
                 label: S.of(context).home,
               ),
 
+              NavigationDestination(
+                selectedIcon: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1A2E).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.star_rounded,
+                    color: Color(0xFF1A1A2E),
+                    size: 24,
+                  ),
+                ),
+                icon: const Icon(Icons.star_outline_rounded, size: 24),
+                label: 'Ratings',
+              ),
+
               // 🗺 Itinerary / Planner
               NavigationDestination(
                 selectedIcon: Container(
@@ -426,6 +444,7 @@ class _MyHomePageState extends State<MyHomePage>
           opacity: _fadeAnimation,
           child: [
             HomeScreen(),
+            const RatingsPage(),
             const ItineraryPage(),
             const BlogListScreen(),
             Ebook(),
