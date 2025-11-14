@@ -43,13 +43,15 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.bluedale2.klangvalley4locals"
-        minSdkVersion flutter.minSdkVersion
-        targetSdk 35
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
-        multiDexEnabled true  // Keep this
-    }
+    applicationId = "com.bluedale.serembantheguide"
+    minSdkVersion flutter.minSdkVersion
+    targetSdkVersion 36
+    versionCode flutterVersionCode.toInteger()
+    versionName flutterVersionName
+    
+    // Add this:
+    multiDexEnabled true
+}
 
     signingConfigs {
         release {
